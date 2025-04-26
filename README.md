@@ -17,4 +17,5 @@ Ejecuta el siguiente script en tu terminal:
 Accede a la ruta: /api/auth/login con los siguientes datos:
 - email: demo@panel.com
 - password: password
+
 Y obtendrás el token de autorización para acceder a los demas microservicios.
