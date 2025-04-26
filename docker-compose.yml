@@ -1,0 +1,218 @@
+networks:
+  laravel_network:
+    driver: bridge
+
+volumes:
+  db_server1_data:
+    driver: local
+  db_server2_data:
+    driver: local
+  db_server3_data:
+    driver: local
+  db_server4_data:
+    driver: local
+
+services:
+  # Postgresql for Auth service
+  db_server1:
+    image: postgres:13
+    container_name: "db_server1_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: auth_db
+    ports:
+      - "5450:5432"
+    volumes:
+      - db_server1_data:/var/lib/postgresql/data
+    networks:
+      - laravel_network
+
+  # MongoDB for inventory service
+  db_server2:
+    image: mongo:latest
+    container_name: "db_server2_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - db_server2_data:/data/db
+    networks:
+      - laravel_network
+    ports:
+      - "27020:27017"
+
+  # MySQL for Email service
+  db_server3:
+    image: mysql:8.0
+    container_name: "db_server3_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: order_db
+      MYSQL_PASSWORD: root
+    ports:
+      - "3311:3306"
+    volumes:
+      - db_server3_data:/var/lib/mysql
+    networks:
+      - laravel_network
+
+  # MongoDB for Orders service
+  db_server4:
+    image: mongo:latest
+    container_name: "db_server4_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - db_server4_data:/data/db
+    networks:
+      - laravel_network
+    ports:
+      - "27021:27017"
+
+  # Auth service Laravel
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: "auth-service_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    volumes:
+      - ./auth-service:/var/www/html
+    environment:
+      - APP_NAME="Auth microservice"
+      - APP_ENV=local
+      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db_server1
+      - DB_PORT=5432
+      - DB_DATABASE=auth_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+    ports:
+      - "8888:80"
+    depends_on:
+      - db_server1
+    networks:
+      - laravel_network
+
+  # Inventory service - Laravel
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    container_name: "inventory-service_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    volumes:
+      - ./inventory-service:/var/www/html
+    environment:
+      - APP_NAME="Inventory microservice"
+      - APP_ENV=local
+      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+      - APP_DEBUG=true
+      - MONGO_URI=mongodb://root:root@db_server2:27017
+      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+    ports:
+      - "8889:80"
+    depends_on:
+      - db_server2
+    networks:
+      - laravel_network
+  
+  # Email service - Laravel
+  email-service:
+    build:
+      context: ./email-service
+      dockerfile: Dockerfile
+    container_name: "email-service_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    volumes:
+      - ./email-service:/var/www/html
+    environment:
+      - APP_NAME="Email microservice"
+      - APP_ENV=local
+      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+      - APP_DEBUG=true
+      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - DB_CONNECTION=mysql
+      - DB_HOST=db_server3
+      - DB_PORT=3306
+      - DB_DATABASE=order_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - CACHE_STORE=database
+      - BROADCAST_CONNECTION=log
+      - FILESYSTEM_DISK=local
+      - QUEUE_CONNECTION=sync
+      - SESSION_DRIVER=database
+      - SESSION_LIFETIME=120
+    ports:
+      - "8879:80"
+    depends_on:
+      - db_server3
+    networks:
+      - laravel_network
+  
+  # Orders service - Laravel
+  orders-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: "orders-service_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    volumes:
+      - ./order-service:/var/www/html
+    environment:
+      - APP_NAME="Orders microservice"
+      - APP_ENV=local
+      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+      - APP_DEBUG=true
+      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - MONGO_URI=mongodb://root:root@db_server4:27017
+      - INVENTORY_SERVICE_URL=inventory-service:80
+      - EMAIL_SERVICE_URL=email-service:80
+    ports:
+      - "8890:80"
+    depends_on:
+      - db_server4
+      - inventory-service
+      - email-service
+    networks:
+      - laravel_network
+
+  # Api Gateway - Laravel
+  api-gateway-service:
+    build:
+      context: ./api-gateway-service
+      dockerfile: Dockerfile
+    container_name: "api-gateway_service_${COMPOSE_PROJECT_NAME}"
+    restart: unless-stopped
+    volumes:
+      - ./api-gateway-service:/var/www/html
+    environment:
+      - APP_NAME="API Gateway"
+      - APP_ENV=local
+      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+      - APP_DEBUG=true
+      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - AUTH_SERVICE_URL=auth-service:80
+      - EMAIL_SERVICE_URL=email-service:80
+      - INVENTORY_SERVICE_URL=inventory-service:80
+      - ORDERS_SERVICE_URL=orders-service:80
+    ports:
+      - "8891:80"
+    depends_on:
+      - auth-service
+      - inventory-service
+      - email-service
+      - orders-service
+    networks:
+      - laravel_network
+  
