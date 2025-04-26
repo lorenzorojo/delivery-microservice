@@ -19,9 +19,9 @@ services:
     container_name: "db_server1_${COMPOSE_PROJECT_NAME}"
     restart: unless-stopped
     environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: auth_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5450:5432"
     volumes:
@@ -35,8 +35,8 @@ services:
     container_name: "db_server2_${COMPOSE_PROJECT_NAME}"
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - db_server2_data:/data/db
     networks:
@@ -50,9 +50,9 @@ services:
     container_name: "db_server3_${COMPOSE_PROJECT_NAME}"
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: order_db
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3311:3306"
     volumes:
@@ -66,8 +66,8 @@ services:
     container_name: "db_server4_${COMPOSE_PROJECT_NAME}"
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - db_server4_data:/data/db
     networks:
@@ -85,17 +85,17 @@ services:
     volumes:
       - ./auth-service:/var/www/html
     environment:
-      - APP_NAME="Auth microservice"
-      - APP_ENV=local
-      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
-      - APP_DEBUG=true
+      - APP_NAME=${AUTH_APP_NAME}
+      - APP_ENV=${AUTH_APP_ENV}
+      - APP_KEY=${AUTH_APP_KEY}
+      - APP_DEBUG=${AUTH_APP_DEBUG}
       - DB_CONNECTION=pgsql
       - DB_HOST=db_server1
       - DB_PORT=5432
-      - DB_DATABASE=auth_db
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - DB_DATABASE=${AUTH_DB_DATABASE}
+      - DB_USERNAME=${AUTH_DB_USERNAME}
+      - DB_PASSWORD=${AUTH_DB_PASSWORD}
+      - JWT_SECRET=${AUTH_JWT_SECRET}
     ports:
       - "8888:80"
     depends_on:
@@ -113,12 +113,12 @@ services:
     volumes:
       - ./inventory-service:/var/www/html
     environment:
-      - APP_NAME="Inventory microservice"
-      - APP_ENV=local
-      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
-      - APP_DEBUG=true
-      - MONGO_URI=mongodb://root:root@db_server2:27017
-      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - APP_NAME=${INVENTORY_APP_NAME}
+      - APP_ENV=${INVENTORY_APP_ENV}
+      - APP_KEY=${INVENTORY_APP_KEY}
+      - APP_DEBUG=${INVENTORY_APP_DEBUG}
+      - MONGO_URI="mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@db_server2:27017"
+      - JWT_SECRET=${INVENTORY_JWT_SECRET}
     ports:
       - "8889:80"
     depends_on:
@@ -136,23 +136,24 @@ services:
     volumes:
       - ./email-service:/var/www/html
     environment:
-      - APP_NAME="Email microservice"
-      - APP_ENV=local
-      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
-      - APP_DEBUG=true
-      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - APP_NAME=${EMAIL_APP_NAME}
+      - APP_ENV=${EMAIL_APP_ENV}
+      - APP_KEY=${EMAIL_APP_KEY}
+      - APP_DEBUG=${EMAIL_APP_DEBUG}
+      - JWT_SECRET=${EMAIL_JWT_SECRET}
       - DB_CONNECTION=mysql
       - DB_HOST=db_server3
       - DB_PORT=3306
-      - DB_DATABASE=order_db
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
-      - CACHE_STORE=database
-      - BROADCAST_CONNECTION=log
-      - FILESYSTEM_DISK=local
-      - QUEUE_CONNECTION=sync
-      - SESSION_DRIVER=database
-      - SESSION_LIFETIME=120
+      - DB_DATABASE=${EMAIL_DB_DATABASE}
+      - DB_USERNAME=${EMAIL_DB_USERNAME}
+      - DB_PASSWORD=${EMAIL_DB_PASSWORD}
+      - CACHE_STORE=${CACHE_STORE}
+      - BROADCAST_CONNECTION=${EMAIL_BROADCAST_CONNECTION}
+      - FILESYSTEM_DISK=${EMAIL_FILESYSTEM_DISK}
+      - QUEUE_CONNECTION=${EMAIL_QUEUE_CONNECTION}
+      - SESSION_DRIVER=${EMAIL_SESSION_DRIVER}
+      - SESSION_LIFETIME=${EMAIL_SESSION_LIFETIME}
+      - MAIL_MAILER=${EMAIL_MAIL_MAILER}
     ports:
       - "8879:80"
     depends_on:
@@ -170,12 +171,12 @@ services:
     volumes:
       - ./order-service:/var/www/html
     environment:
-      - APP_NAME="Orders microservice"
-      - APP_ENV=local
-      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
-      - APP_DEBUG=true
-      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
-      - MONGO_URI=mongodb://root:root@db_server4:27017
+      - APP_NAME=${ORDER_APP_NAME}
+      - APP_ENV=${ORDER_APP_ENV}
+      - APP_KEY=${ORDER_APP_KEY}
+      - APP_DEBUG=${ORDER_APP_DEBUG}
+      - JWT_SECRET=${ORDER_JWT_SECRET}
+      - MONGO_URI="mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@db_server4:27017"
       - INVENTORY_SERVICE_URL=inventory-service:80
       - EMAIL_SERVICE_URL=email-service:80
     ports:
@@ -197,11 +198,11 @@ services:
     volumes:
       - ./api-gateway-service:/var/www/html
     environment:
-      - APP_NAME="API Gateway"
-      - APP_ENV=local
-      - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
-      - APP_DEBUG=true
-      - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+      - APP_NAME=${API_GATEWAY_APP_NAME}
+      - APP_ENV=${API_GATEWAY_APP_ENV}
+      - APP_KEY=${API_GATEWAY_APP_KEY}
+      - APP_DEBUG=${API_GATEWAY_APP_DEBUG}
+      - JWT_SECRET=${API_GATEWAY_JWT_SECRET}
       - AUTH_SERVICE_URL=auth-service:80
       - EMAIL_SERVICE_URL=email-service:80
       - INVENTORY_SERVICE_URL=inventory-service:80
