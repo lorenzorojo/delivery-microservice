@@ -12,7 +12,7 @@ Ejecuta el siguiente script en tu terminal:
 
 ```bash
 ./setup.sh
-
+```
 ## Iniciar sesión
 Accede a la ruta: /api/auth/login con los siguientes datos:
 - email: demo@panel.com
