@@ -1,0 +1,51 @@
+networks:
+  auth_network:
+    driver: bridge
+
+volumes:
+  auth_db_data:
+    driver: local
+
+services:
+    auth_db_server:
+        image: postgres:13
+        container_name: db_server1
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+            POSTGRES_DB: auth_db
+        ports:
+            - "5450:5432"
+        volumes:
+            - auth_db_data:/var/lib/postgresql/data
+        networks:
+            - auth_network
+    auth_service:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: auth_service
+        restart: unless-stopped
+        volumes:
+        - ./:/var/www/html
+        # command: >
+        #     bash -c "php artisan migrate && php artisan db:seed"
+        environment:
+        - APP_NAME="Auth microservice"
+        - APP_ENV=local
+        - APP_KEY=base64:q1eDmtCjlKGYONOXZgS4bd6q5LTq3NDhYQiiOwxg5TY=
+        - APP_DEBUG=true
+        - DB_CONNECTION=pgsql
+        - DB_HOST=db_server1
+        - DB_PORT=5432
+        - DB_DATABASE=auth_db
+        - DB_USERNAME=root
+        - DB_PASSWORD=root
+        - JWT_SECRET=fVJQQyVo7v2H4nYHcFAdmAw13RIcVxbDsakbVC8o4PkOVGe7K02HQn2pffI2NLo0
+        ports:
+        - "8888:80"
+        depends_on:
+        - auth_db_server
+        networks:
+        - auth_network

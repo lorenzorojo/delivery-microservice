@@ -32,8 +32,8 @@ class SendOrderShippedEmail implements ShouldQueue
         $this->toAddress = $to;
         $this->subject = $sub;
         $this->contentBody = $content;
-        $this->queue = 'email-microservice-queue';
-        $this->connection = 'sqs';
+        // $this->queue = 'email-microservice-queue';
+        // $this->connection = 'sqs';
     }
 
     /**

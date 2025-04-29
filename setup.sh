@@ -15,6 +15,6 @@ docker-compose exec email-service composer initial-config
 docker-compose exec orders-service composer install --no-dev --optimize-autoloader
 docker-compose exec api-gateway-service composer install --no-dev --optimize-autoloader
 
-echo "✅ Entorno listo. Puedes iniciar sesión con:"
+echo "✅ Entorno listo. Puedes hacer login al api con:"
 echo "   📧 Usuario: demo@panel.com"
 echo "   🔑 Contraseña: password"
