@@ -10,12 +10,16 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['jwt.verify'])->group(function () {
     Route::prefix('products')->group(function () {
-        Route::any('/', [GatewayController::class, 'forwardToInventory']);
         Route::any('/{any}', [GatewayController::class, 'forwardToInventory'])->where('any', '.*');
+        Route::any('/', [GatewayController::class, 'forwardToInventory']);
     });
 
     Route::prefix('orders')->group(function () {
-        Route::any('/', [GatewayController::class, 'forwardToOrders']);
         Route::any('/{any}', [GatewayController::class, 'forwardToOrders'])->where('any', '.*');
+        Route::any('/', [GatewayController::class, 'forwardToOrders']);
+    });
+    Route::prefix('emails')->group(function () {
+        Route::any('/{any}', [GatewayController::class, 'forwardToEmails'])->where('any', '.*');
+        Route::any('/', [GatewayController::class, 'forwardToEmails'])->where('any', '.*');
     });
 });

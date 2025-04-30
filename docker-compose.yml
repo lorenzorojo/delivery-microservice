@@ -203,10 +203,10 @@ services:
       - APP_KEY=${API_GATEWAY_APP_KEY}
       - APP_DEBUG=${API_GATEWAY_APP_DEBUG}
       - JWT_SECRET=${API_GATEWAY_JWT_SECRET}
-      - AUTH_SERVICE_URL=auth-service:80
-      - EMAIL_SERVICE_URL=email-service:80
-      - INVENTORY_SERVICE_URL=inventory-service:80
-      - ORDERS_SERVICE_URL=orders-service:80
+      - AUTH_SERVICE_URL=http://auth-service:80
+      - EMAIL_SERVICE_URL=http://email-service:80
+      - INVENTORY_SERVICE_URL=http://inventory-service:80
+      - ORDERS_SERVICE_URL=http://orders-service:80
     ports:
       - "8891:80"
     depends_on:

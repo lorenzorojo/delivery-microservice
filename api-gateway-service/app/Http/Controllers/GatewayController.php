@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 /*/**
 config('services.auth.url')
 config('services.orders.url')
@@ -23,7 +25,8 @@ class GatewayController extends Controller
 
     public function forwardToInventory(Request $request, $any = null)
     {
-        $anyPath =  '/' . $any ?? '';
+        $anyPath = $this->formatAnyPath($any);
+
         $response = Http::withToken($request->bearerToken())
             ->send(
                 $request->method(),
@@ -39,7 +42,8 @@ class GatewayController extends Controller
 
     public function forwardToOrders(Request $request, $any = null)
     {
-        $anyPath =  '/' . $any ?? '';
+        $anyPath = $this->formatAnyPath($any);
+
         $response = Http::withToken($request->bearerToken())
             ->send(
                 $request->method(),
@@ -53,8 +57,35 @@ class GatewayController extends Controller
         return response($response->body(), $response->status());
     }
 
+    public function forwardToEmails(Request $request, $any = null)
+    {
+        $anyPath = $this->formatAnyPath($any);
+        Log::info('forwardToEmails', [
+            'url' => config('services.emails.url') . self::PREFIX_V1 . 'emails' . $anyPath,
+            'method' => $request->method(),
+            'query' => $request->query(),
+            'body' => $request->all(),
+        ]);
+        $response = Http::withToken($request->bearerToken())
+            ->send(
+                $request->method(),
+                config('services.emails.url') . self::PREFIX_V1 . 'emails' . $anyPath,
+                [
+                    'query' => $request->query(),
+                    'json' => $request->all(),
+                ]
+            );
+
+        return response($response->body(), $response->status());
+    }
+
     private function stripApiPrefix(string $path): string
     {
         return preg_replace('#^api(?:/v\d+)?/?#', '', $path);
+    }
+
+    public function formatAnyPath($any): string
+    {
+        return !empty($any) ? '/' . $any : '';
     }
 }
