@@ -18,4 +18,8 @@ Accede a la ruta: /api/auth/login con los siguientes datos:
 - email: demo@panel.com
 - password: password
 
-Y obtendrás el token de autorización para acceder a los demas microservicios.
+Y obtendrás el token de autorización para acceder a los demás microservicios.
+
+## Documentación API en Postman
+
+https://documenter.getpostman.com/view/18208862/2sB2j3BrhN
