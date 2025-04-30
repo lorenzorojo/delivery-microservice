@@ -60,12 +60,6 @@ class GatewayController extends Controller
     public function forwardToEmails(Request $request, $any = null)
     {
         $anyPath = $this->formatAnyPath($any);
-        Log::info('forwardToEmails', [
-            'url' => config('services.emails.url') . self::PREFIX_V1 . 'emails' . $anyPath,
-            'method' => $request->method(),
-            'query' => $request->query(),
-            'body' => $request->all(),
-        ]);
         $response = Http::withToken($request->bearerToken())
             ->send(
                 $request->method(),
